@@ -1,0 +1,252 @@
+<!DOCTYPE html> 
+<html>
+<head>
+  <title>Dijkstra</title>
+  
+  <div style="position: relative; top: 20px; left: 200px; font-family: Arial, sans-serif;">
+    
+    <h1>Algoritmo de Dijkstra</h1>
+  
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+  <style>
+    .pseudocode {
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+    }
+    
+    .link {
+      stroke: #a0a0a0;
+      stroke-width: 3px;
+    }
+        
+    .node {
+      fill: #cfcfcf;
+      stroke: #ffffff;
+      stroke-width: 2px;
+    }
+
+    .node-labels {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      text-anchor: middle;
+    }
+
+    .lines-fix {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+    
+    .lines-fix:before {
+      content:" ";
+      display: block;
+      height: 2px;
+      width: 30px;
+      position: absolute;
+      top: 50%;
+      left: -3%;
+      background: #fa6c61;
+    }
+
+    .lines-possible {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px;
+    }
+      
+    .lines-possible:before {
+      content:" ";
+      display: block;
+      height: 2px;
+      width: 30px;
+      position: absolute;
+      top: 50%;
+      left: -3%;
+      background: #ebc934;
+    }
+    
+    .lines-test {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+        
+    .lines-test:before {
+      content:" ";
+      display: block;
+      height: 2px;
+      width: 30px;
+      position: absolute;
+      top: 50%;
+      left: -3%;
+      background: #0398fc;
+    }
+    
+    .lines-ignored {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+          
+    .lines-ignored:before {
+      content:" ";
+      display: block;
+      height: 2px;
+      width: 30px;
+      position: absolute;
+      top: 50%;
+      left: -3%;
+      background: #cfcfcf;
+    }
+    
+    .dot-source {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-source:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #8a3af2;
+    }
+
+    .dot-fix {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-fix:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #fa6c61;
+    }
+
+    .dot-test {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-test:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #26c92c;
+    }
+    
+    .dot-possible {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-possible:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #ebc934;
+    }
+    
+    .dot-default {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-default:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #cfcfcf;
+    }
+
+    .dot-connect {
+      position: relative;
+      /*max-width: 1500px;*/
+      margin: 0px auto;
+      left: 50px
+    }
+
+    .dot-connect:before {
+      content:" ";
+      display: block;
+      height: 13px;
+      width: 13px;
+      border-radius: 50%;
+      position: absolute;
+      top: 10%;
+      left: -2.5%;
+      background: #0398fc;
+    }
+    
+    </style>
+  
+  
+  <div id="graphContainer"></div>
+  
+  <div id="pseudocode" style="position: relative; top: -650px; left: 650px;"></div>
+
+  <div id="legendas" style="position: relative; top: -700px; left: 100px; font-family: Arial, sans-serif;">
+
+    <p style="font-size: 20px">Legendas:</p>
+    <p class="lines-fix" style="font-size: 14px">Fixado</p>
+    <p class="lines-test" style="font-size: 14px">A ser testado</p>
+    <p class="lines-possible" style="font-size: 14px">Aceite temporariamente</p>
+    <p class="lines-ignored" style="font-size: 14px">Descartado</p>
+    
+    <p class="dot-source" style="font-size: 14px">Começo</p>
+    <p class="dot-fix" style="font-size: 14px">Fixado</p>
+    <p class="dot-connect" style="font-size: 14px">Por testar</p>
+    <p class="dot-possible" style="font-size: 14px">Aceite temporariamente</p>
+    <p class="dot-test" style="font-size: 14px">Atual</p>
+    <p class="dot-default" style="font-size: 14px">Não visitado</p>
+
+  </div>
+  
+  <script defer src="index.js"></script>
+</body>
+</html>
